@@ -1,45 +1,56 @@
 const express = require("express");
 const bodyParser = require("body-parser");
-const { randomBytes } = require("crypto");
+// const { randomBytes } = require("crypto");
 const cors = require("cors");
-const axios = require("axios");
+// const axios = require("axios");
+const mongoose = require("mongoose");
 
 const app = express();
-app.use(bodyParser.json());
 app.use(cors());
 
-const posts = {};
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
 
-app.get("/posts", (req, res) => {
-  res.send(posts);
+mongoose.connect("mongodb://localhost/posts", {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
 });
 
-app.post("/posts", async (req, res) => {
-  const id = randomBytes(4).toString("hex");
-  const { title } = req.body;
+// const posts = {};
 
-  posts[id] = {
-    id,
-    title,
-  };
+// app.get("/posts", (req, res) => {
+//   res.send(posts);
+// });
 
-  await axios.post("http://localhost:4005/events", {
-    type: "PostCreated",
-    data: {
-      id,
-      title,
-    },
-  });
+// app.post("/posts", async (req, res) => {
+//   const id = randomBytes(4).toString("hex");
+//   const { title } = req.body;
 
-  res.status(201).send(posts[id]);
-});
+//   posts[id] = {
+//     id,
+//     title,
+//   };
 
-app.post("/events", (req, res) => {
-  console.log("Received Event", req.body.type);
+//   await axios.post("http://localhost:4005/events", {
+//     type: "PostCreated",
+//     data: {
+//       id,
+//       title,
+//     },
+//   });
 
-  res.send({});
-});
+//   res.status(201).send(posts[id]);
+// });
 
-app.listen(4000, () => {
+// app.post("/events", (req, res) => {
+//   console.log("Received Event", req.body.type);
+
+//   res.send({});
+// });
+const posts = require("./controllers/posts")(app);
+
+const PORT = process.env.PORT || 4000;
+
+app.listen(PORT, () => {
   console.log("Listening on 4000");
 });
